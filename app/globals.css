@@ -2,15 +2,16 @@
 
 :root {
   --orange: #f8a91a;
-  --orange-dark: #dc8700;
-  --orange-soft: #fff6e3;
-  --ink: #171717;
-  --muted: #666a70;
-  --line: #e9e9e7;
-  --surface: #f7f7f5;
+  --orange-dark: #c87800;
+  --orange-soft: #fff3d9;
+  --ink: #2d2b27;
+  --muted: #6f706d;
+  --line: #e8e3da;
+  --surface: #f6f5f2;
+  --cream: #fffaf1;
   --white: #ffffff;
   --green: #188b4b;
-  --shadow: 0 22px 70px rgba(24, 22, 18, 0.09);
+  --shadow: 0 22px 70px rgba(85, 62, 20, 0.1);
   --radius: 24px;
   --shell: 1240px;
 }
@@ -75,8 +76,8 @@ a {
 }
 
 .topbar {
-  background: var(--ink);
-  color: rgba(255, 255, 255, 0.8);
+  background: linear-gradient(90deg, var(--orange), #ffc65b);
+  color: #49340d;
   font-size: 12px;
   letter-spacing: 0.02em;
 }
@@ -96,7 +97,7 @@ a {
 }
 
 .topbar a:hover {
-  color: var(--orange);
+  color: #7c4700;
 }
 
 .site-header {
@@ -229,7 +230,7 @@ a {
 }
 
 .header-cta:hover {
-  background: var(--ink);
+  background: var(--orange-dark);
   color: white;
   transform: translateY(-1px);
 }
@@ -285,9 +286,9 @@ a {
 }
 
 .button.primary:hover {
-  background: var(--ink);
+  background: var(--orange-dark);
   color: white;
-  box-shadow: 0 14px 34px rgba(23, 23, 23, 0.16);
+  box-shadow: 0 14px 34px rgba(200, 120, 0, 0.2);
 }
 
 .button.secondary {
@@ -302,13 +303,14 @@ a {
 }
 
 .button.dark {
-  background: var(--ink);
-  color: white;
+  background: var(--orange);
+  color: var(--ink);
+  box-shadow: 0 12px 30px rgba(248, 169, 26, 0.2);
 }
 
 .button.dark:hover {
-  background: var(--orange);
-  color: var(--ink);
+  background: var(--orange-dark);
+  color: white;
 }
 
 .button.white {
@@ -317,8 +319,8 @@ a {
 }
 
 .button.ghost-white {
-  color: white;
-  border-color: rgba(255, 255, 255, 0.45);
+  color: var(--ink);
+  border-color: rgba(90, 61, 12, 0.26);
 }
 
 .hero-actions {
@@ -339,7 +341,7 @@ a {
 }
 
 .eyebrow.light {
-  color: var(--orange);
+  color: var(--orange-dark);
 }
 
 .section {
@@ -691,18 +693,19 @@ a {
 
 .dealer-section {
   padding: 110px 0;
-  color: white;
+  color: var(--ink);
   background:
-    radial-gradient(circle at 10% 10%, rgba(248, 169, 26, 0.21), transparent 28%),
-    #171717;
+    radial-gradient(circle at 10% 10%, rgba(248, 169, 26, 0.2), transparent 30%),
+    linear-gradient(135deg, var(--cream), var(--surface));
+  border-block: 1px solid #f0e2c5;
 }
 
 .dealer-section .section-heading h2 {
-  color: white;
+  color: var(--ink);
 }
 
 .dealer-section .section-heading > p:last-child {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
 }
 
 .dealer-split {
@@ -723,13 +726,14 @@ a {
   padding: 22px;
   display: flex;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid var(--line);
   border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(85, 62, 20, 0.06);
 }
 
 .benefit-grid article > span {
-  color: var(--orange);
+  color: var(--orange-dark);
   font-size: 12px;
   font-weight: 800;
 }
@@ -741,7 +745,7 @@ a {
 
 .benefit-grid p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.55;
 }
@@ -770,8 +774,9 @@ a {
 }
 
 .support-grid > a:hover {
-  background: var(--ink);
-  color: white;
+  background: var(--orange-soft);
+  color: var(--ink);
+  border-color: rgba(248, 169, 26, 0.5);
   transform: translateY(-3px);
 }
 
@@ -800,7 +805,7 @@ a {
 }
 
 .support-grid > a:hover p {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
 }
 
 .page-hero {
@@ -810,10 +815,11 @@ a {
   padding: 110px 0 100px;
   display: flex;
   align-items: center;
-  color: white;
+  color: var(--ink);
   background:
-    linear-gradient(115deg, rgba(248, 169, 26, 0.12), transparent 36%),
-    #171717;
+    radial-gradient(circle at 85% 25%, rgba(248, 169, 26, 0.24), transparent 28%),
+    linear-gradient(115deg, var(--cream), var(--surface));
+  border-bottom: 1px solid #f0e2c5;
 }
 
 .page-hero .shell {
@@ -832,13 +838,13 @@ a {
 .page-hero .shell > p:last-child {
   max-width: 650px;
   margin: 22px 0 0;
-  color: rgba(255, 255, 255, 0.66);
+  color: var(--muted);
   font-size: 18px;
 }
 
 .hero-orb {
   position: absolute;
-  border: 1px solid rgba(248, 169, 26, 0.24);
+  border: 1px solid rgba(200, 120, 0, 0.24);
   border-radius: 50%;
 }
 
@@ -854,7 +860,7 @@ a {
   bottom: -80px;
   width: 260px;
   height: 260px;
-  background: rgba(248, 169, 26, 0.07);
+  background: rgba(248, 169, 26, 0.12);
 }
 
 .about-overview {
@@ -885,15 +891,15 @@ a {
   padding: 22px;
   display: flex;
   flex-direction: column;
-  color: white;
-  background: rgba(23, 23, 23, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--ink);
+  background: rgba(255, 243, 217, 0.94);
+  border: 1px solid rgba(248, 169, 26, 0.34);
   border-radius: 18px;
   backdrop-filter: blur(12px);
 }
 
 .about-image-note strong {
-  color: var(--orange);
+  color: var(--orange-dark);
   font-size: 22px;
 }
 
@@ -903,8 +909,11 @@ a {
 
 .mission-section {
   padding: 100px 0;
-  color: white;
-  background: var(--ink);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 86% 15%, rgba(248, 169, 26, 0.18), transparent 28%),
+    linear-gradient(135deg, var(--cream), var(--surface));
+  border-block: 1px solid #f0e2c5;
 }
 
 .mission-grid {
@@ -915,7 +924,7 @@ a {
 }
 
 .mission-copy p:last-child {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
 }
 
 .values-grid {
@@ -927,13 +936,14 @@ a {
 .values-grid article {
   min-height: 250px;
   padding: 26px;
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: white;
+  border: 1px solid var(--line);
   border-radius: 22px;
+  box-shadow: 0 12px 32px rgba(85, 62, 20, 0.06);
 }
 
 .values-grid article > span {
-  color: var(--orange);
+  color: var(--orange-dark);
   font-size: 26px;
 }
 
@@ -944,7 +954,7 @@ a {
 
 .values-grid p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.56);
+  color: var(--muted);
   font-size: 13px;
 }
 
@@ -1000,10 +1010,10 @@ a {
 
 .cta-section {
   padding: 88px 0;
-  color: white;
+  color: var(--ink);
   background:
-    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.13), transparent 30%),
-    var(--orange-dark);
+    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.54), transparent 30%),
+    linear-gradient(135deg, var(--orange), #ffd27d);
 }
 
 .cta-inner {
@@ -1018,13 +1028,13 @@ a {
 }
 
 .cta-inner .eyebrow {
-  color: white;
-  opacity: 0.78;
+  color: #704100;
+  opacity: 1;
 }
 
 .cta-inner p:last-child {
   margin-bottom: 0;
-  color: rgba(255, 255, 255, 0.74);
+  color: #5f471b;
 }
 
 .product-group + .product-group {
@@ -1227,14 +1237,14 @@ a {
   display: flex;
   align-items: center;
   gap: 18px;
-  color: white;
-  background: var(--ink);
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--orange), #ffc962);
 }
 
 .spec-title > span {
   padding: 8px 10px;
   color: var(--ink);
-  background: var(--orange);
+  background: white;
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -1248,7 +1258,7 @@ a {
 
 .spec-title p {
   margin: 2px 0 0;
-  color: rgba(255, 255, 255, 0.62);
+  color: #694e1a;
   font-size: 13px;
 }
 
@@ -1284,8 +1294,11 @@ a {
 
 .downloads-preview {
   padding: 84px 0;
-  color: white;
-  background: var(--ink);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 10% 15%, rgba(248, 169, 26, 0.2), transparent 30%),
+    linear-gradient(135deg, var(--cream), var(--surface));
+  border-block: 1px solid #f0e2c5;
 }
 
 .downloads-preview > .shell {
@@ -1307,13 +1320,13 @@ a {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: white;
+  border: 1px solid var(--line);
   border-radius: 15px;
 }
 
 .download-mini-grid a:hover {
-  background: rgba(248, 169, 26, 0.12);
+  background: var(--orange-soft);
   border-color: rgba(248, 169, 26, 0.45);
 }
 
@@ -1331,7 +1344,7 @@ a {
 }
 
 .download-mini-grid b {
-  color: var(--orange);
+  color: var(--orange-dark);
   font-size: 20px;
 }
 
@@ -1595,8 +1608,8 @@ a {
 
 .download-head {
   min-height: 52px;
-  color: white;
-  background: var(--ink);
+  color: var(--ink);
+  background: linear-gradient(90deg, var(--orange), #ffc75e);
   font-size: 11px;
   font-weight: 780;
   letter-spacing: 0.05em;
@@ -1627,8 +1640,10 @@ a {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   overflow: hidden;
-  color: white;
-  background: var(--ink);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.5), transparent 34%),
+    linear-gradient(135deg, var(--orange), #ffd17a);
   border-radius: 24px;
 }
 
@@ -1638,7 +1653,7 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 1px solid rgba(91, 61, 10, 0.14);
 }
 
 .warranty-highlight > div:last-child {
@@ -1646,7 +1661,7 @@ a {
 }
 
 .warranty-highlight span {
-  color: var(--orange);
+  color: #794700;
   font-size: 58px;
   font-weight: 820;
   line-height: 1;
@@ -1654,7 +1669,7 @@ a {
 
 .warranty-highlight p {
   margin: 9px 0 0;
-  color: rgba(255, 255, 255, 0.68);
+  color: #5f471b;
 }
 
 .warranty-note {
@@ -1763,10 +1778,11 @@ a {
 
 .contact-section {
   padding: 100px 0;
-  color: white;
+  color: var(--ink);
   background:
-    radial-gradient(circle at 20% 20%, rgba(248, 169, 26, 0.15), transparent 28%),
-    var(--ink);
+    radial-gradient(circle at 20% 20%, rgba(248, 169, 26, 0.2), transparent 28%),
+    linear-gradient(135deg, var(--cream), var(--surface));
+  border-block: 1px solid #f0e2c5;
 }
 
 .contact-grid {
@@ -1777,7 +1793,7 @@ a {
 }
 
 .contact-grid > div > p {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
 }
 
 .contact-detail {
@@ -1787,7 +1803,7 @@ a {
 }
 
 .contact-detail span {
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--muted);
   font-size: 11px;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -1796,7 +1812,7 @@ a {
 
 .contact-detail a {
   margin-top: 4px;
-  color: var(--orange);
+  color: var(--orange-dark);
   font-size: 20px;
   font-weight: 760;
 }
@@ -1805,7 +1821,9 @@ a {
   padding: 34px;
   color: var(--ink);
   background: white;
+  border: 1px solid var(--line);
   border-radius: 26px;
+  box-shadow: var(--shadow);
 }
 
 .form-grid {
@@ -2020,8 +2038,9 @@ a {
 
 .footer {
   padding: 80px 0 0;
-  color: rgba(255, 255, 255, 0.7);
-  background: #111;
+  color: var(--muted);
+  background: #f3f2ee;
+  border-top: 1px solid var(--line);
 }
 
 .footer-grid {
@@ -2040,14 +2059,14 @@ a {
 
 .footer-tag {
   margin: 24px 0 8px !important;
-  color: white !important;
+  color: var(--ink) !important;
   font-size: 17px !important;
   font-weight: 700;
 }
 
 .footer-grid h3 {
   margin: 0 0 18px;
-  color: white;
+  color: var(--ink);
   font-size: 15px;
 }
 
@@ -2060,7 +2079,7 @@ a {
 }
 
 .footer-grid a:hover {
-  color: var(--orange);
+  color: var(--orange-dark);
 }
 
 .footer-bottom {
@@ -2069,7 +2088,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--line);
   font-size: 11px;
 }
 
@@ -2087,11 +2106,11 @@ a {
   height: 54px;
   display: grid;
   place-items: center;
-  color: white;
-  background: var(--green);
+  color: var(--ink);
+  background: var(--orange);
   border: 4px solid white;
   border-radius: 50%;
-  box-shadow: 0 12px 32px rgba(20, 80, 48, 0.25);
+  box-shadow: 0 12px 32px rgba(200, 120, 0, 0.28);
 }
 
 .floating-contact span {
@@ -2613,7 +2632,7 @@ a {
   .warranty-highlight > div {
     min-height: 130px;
     border-right: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(91, 61, 10, 0.14);
   }
 
   .warranty-highlight > div:last-child {
