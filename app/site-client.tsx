@@ -451,17 +451,7 @@ function Header({ path }: { path: string }) {
   );
 
   return (
-    <>
-      <div className="topbar">
-        <div className="shell topbar-inner">
-          <span>Powering Pakistan&apos;s Solar Future</span>
-          <div>
-            <a href="tel:+923429470099">+92 342 947 0099</a>
-            <a href="mailto:info@sunx.com">info@sunx.com</a>
-          </div>
-        </div>
-      </div>
-      <header className="site-header">
+    <header className="site-header">
         <div className="shell header-inner">
           <a className="brand" href="/" aria-label="SunX home">
             <img src="/images/sunx-logo.png" alt="SunX PV Technology" />
@@ -537,7 +527,6 @@ function Header({ path }: { path: string }) {
           </div>
         </div>
       </header>
-    </>
   );
 }
 
@@ -688,57 +677,137 @@ function SupportGrid() {
   );
 }
 
+const heroSlides = [
+  {
+    image: "/images/hero-products.webp",
+    alt: "SunX solar inverter and lithium battery product range",
+    href: "/products/",
+  },
+  {
+    image: "/images/hero-power.webp",
+    alt: "SunX home solar energy solution",
+    href: "/contact-us/",
+  },
+];
+
+function HomeHero() {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const previousSlide = () =>
+    setActiveSlide((activeSlide - 1 + 3) % 3);
+  const nextSlide = () => setActiveSlide((activeSlide + 1) % 3);
+
+  return (
+    <section className="home-hero" aria-label="SunX featured products">
+      <div className="shell">
+        <div
+          className="hero-frame"
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="SunX product highlights"
+        >
+          {heroSlides.map((slide, index) => (
+            <a
+              className={`hero-slide ${activeSlide === index ? "active" : ""}`}
+              href={slide.href}
+              aria-hidden={activeSlide !== index}
+              tabIndex={activeSlide === index ? 0 : -1}
+              key={slide.image}
+            >
+              <img className="hero-art" src={slide.image} alt={slide.alt} />
+            </a>
+          ))}
+          <a
+            className={`hero-slide hero-collage-slide ${activeSlide === 2 ? "active" : ""}`}
+            href="/products/"
+            aria-label="Explore the SunX product family"
+            aria-hidden={activeSlide !== 2}
+            tabIndex={activeSlide === 2 ? 0 : -1}
+          >
+            <div className="hero-collage">
+              <img
+                className="collage-logo"
+                src="/images/sunx-logo.png"
+                alt=""
+              />
+              <img
+                className="collage-product collage-prime"
+                src="/images/prime-product.png"
+                alt=""
+              />
+              <img
+                className="collage-product collage-pro"
+                src="/images/pro-hero.png"
+                alt=""
+              />
+              <img
+                className="collage-product collage-battery"
+                src="/images/powerwall-max.png"
+                alt=""
+              />
+              <img
+                className="collage-product collage-ultra"
+                src="/images/ultra-8kw.png"
+                alt=""
+              />
+            </div>
+          </a>
+          <button
+            className="hero-arrow previous"
+            type="button"
+            aria-label="Previous hero image"
+            onClick={previousSlide}
+          >
+            ‹
+          </button>
+          <button
+            className="hero-arrow next"
+            type="button"
+            aria-label="Next hero image"
+            onClick={nextSlide}
+          >
+            ›
+          </button>
+          <div className="hero-dots" aria-label="Choose a hero image">
+            {[0, 1, 2].map((index) => (
+              <button
+                className={activeSlide === index ? "active" : ""}
+                type="button"
+                aria-label={`Show hero image ${index + 1}`}
+                aria-pressed={activeSlide === index}
+                onClick={() => setActiveSlide(index)}
+                key={index}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="hero-stats">
+          <div>
+            <strong>7+</strong>
+            <span>Years of Experience</span>
+          </div>
+          <div>
+            <strong>1600+</strong>
+            <span>Completed Projects</span>
+          </div>
+          <div>
+            <strong>5 Year</strong>
+            <span>Product Support</span>
+          </div>
+          <div>
+            <strong>Nationwide</strong>
+            <span>Dealer Network</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HomePage() {
   return (
     <>
       <main>
-        <section className="home-hero">
-          <div className="shell">
-            <div className="hero-frame">
-              <img
-                className="hero-art"
-                src="/images/hero-products.webp"
-                alt="SunX solar inverter and lithium battery product range"
-              />
-              <div className="hero-panel">
-                <p className="hero-urdu" lang="ur" dir="rtl">
-                  آپ کی زندگی کا روشن ساتھی
-                </p>
-                <h1>Power Your Future with SunX</h1>
-                <p>
-                  High-performance solar inverters and lithium batteries, built
-                  for reliable energy every day.
-                </p>
-                <div className="hero-actions">
-                  <a className="button primary" href="/products/">
-                    Explore Products
-                  </a>
-                  <a className="button secondary" href="/sunx-dealers/">
-                    Find a Dealer
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div className="hero-stats">
-              <div>
-                <strong>7+</strong>
-                <span>Years of Experience</span>
-              </div>
-              <div>
-                <strong>1600+</strong>
-                <span>Completed Projects</span>
-              </div>
-              <div>
-                <strong>5 Year</strong>
-                <span>Product Support</span>
-              </div>
-              <div>
-                <strong>Nationwide</strong>
-                <span>Dealer Network</span>
-              </div>
-            </div>
-          </div>
-        </section>
+        <HomeHero />
 
         <section className="section intro-section">
           <div className="shell split">
