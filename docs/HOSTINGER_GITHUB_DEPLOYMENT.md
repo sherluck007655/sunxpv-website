@@ -65,9 +65,12 @@ compatibility layer required by the original Sites runtime before starting the
 Vinext server. The repository `start` command uses `server.js`, and every build
 verifies the complete Hostinger output before deployment can pass.
 
-The entry resolves its compatibility loader from its own module URL. This is
-required when Hostinger Passenger imports the entry through `lsnode.js`, where
-the process script path belongs to Hostinger rather than to the application.
+The Hostinger entry is CommonJS because Passenger loads it with `require()`.
+It resolves the compatibility loader from its own `__filename`, registers that
+loader synchronously, and then imports the ESM Vinext server. This avoids both
+Passenger resolving files beside `lsnode.js` and its restriction on requiring
+an ESM graph with top-level await. A nested package marker keeps the generated
+Vinext runtime ESM while the outer Hostinger entry remains CommonJS.
 
 Hostinger currently documents automatic redeployment after GitHub updates for
 its managed Node.js Web App product. A VPS is also possible, but it requires

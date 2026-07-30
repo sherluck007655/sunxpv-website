@@ -32,8 +32,14 @@ install -m 0644 \
   "${script_dir}/cloudflare-worker-loader.mjs" \
   "${SITES_PROJECT_ROOT}/dist/standalone/cloudflare-worker-loader.mjs"
 install -m 0644 \
-  "${script_dir}/hostinger-server.js" \
+  "${script_dir}/hostinger-server.cjs" \
   "${SITES_PROJECT_ROOT}/dist/standalone/server.js"
+install -m 0644 \
+  "${script_dir}/hostinger-package.json" \
+  "${SITES_PROJECT_ROOT}/dist/standalone/package.json"
+install -m 0644 \
+  "${script_dir}/hostinger-esm-package.json" \
+  "${SITES_PROJECT_ROOT}/dist/standalone/dist/package.json"
 
 "${script_dir}/validate-artifact.sh"
 node "${script_dir}/verify-hostinger-output.mjs"
