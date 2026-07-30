@@ -44,12 +44,25 @@ This keeps every code change reversible and gives the team a clear history.
 1. In hPanel, add a Node.js Web App.
 2. Choose Import Git Repository and authorize the private GitHub repository.
 3. Select the production branch, normally `main`.
-4. Use Node.js 22 or a newer compatible LTS version.
-5. Add the environment variables from `.env.example`.
-6. Create a MySQL database and import `deploy/hostinger/mysql-schema.sql`.
-7. Run the production deployment.
-8. Test the temporary Hostinger URL before connecting `sunxpv.com`.
-9. Connect the domain, enable SSL, and verify the sitemap and contact form.
+4. Open the advanced build settings and choose framework `Other`.
+5. Use Node.js `22.x`.
+6. Use install command `npm ci`.
+7. Use build command `npm run build`.
+8. Set output directory to `dist/standalone`.
+9. Set entry file to `hostinger-server.mjs`.
+10. Set start command to `npm run start` when Hostinger shows that field.
+11. Add environment variable `HOST=0.0.0.0`. Let Hostinger provide `PORT`.
+12. Add the database and admin environment variables.
+13. Create a MySQL database and import `deploy/hostinger/mysql-schema.sql`.
+14. Run the production deployment.
+15. Test the temporary Hostinger URL before connecting `sunxpv.com`.
+16. Connect the domain, enable SSL, and verify the sitemap and contact form.
+
+The build generates a self-contained Node.js server in `dist/standalone`. It
+also adds `hostinger-server.mjs`, which loads the compatibility layer required
+by the original Sites runtime before starting the server. The repository
+`start` command uses that entry file, and every build verifies the complete
+Hostinger output before deployment can pass.
 
 Hostinger currently documents automatic redeployment after GitHub updates for
 its managed Node.js Web App product. A VPS is also possible, but it requires
