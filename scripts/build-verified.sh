@@ -26,11 +26,14 @@ timeout \
   "${vinext}" build
 
 install -m 0644 \
+  "${SITES_PROJECT_ROOT}/dist/standalone/server.js" \
+  "${SITES_PROJECT_ROOT}/dist/standalone/vinext-server.mjs"
+install -m 0644 \
   "${script_dir}/cloudflare-worker-loader.mjs" \
   "${SITES_PROJECT_ROOT}/dist/standalone/cloudflare-worker-loader.mjs"
 install -m 0644 \
-  "${script_dir}/hostinger-server.mjs" \
-  "${SITES_PROJECT_ROOT}/dist/standalone/hostinger-server.mjs"
+  "${script_dir}/hostinger-server.js" \
+  "${SITES_PROJECT_ROOT}/dist/standalone/server.js"
 
 "${script_dir}/validate-artifact.sh"
 node "${script_dir}/verify-hostinger-output.mjs"
