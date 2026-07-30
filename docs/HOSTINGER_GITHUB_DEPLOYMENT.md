@@ -49,7 +49,7 @@ This keeps every code change reversible and gives the team a clear history.
 6. Use install command `npm ci`.
 7. Use build command `npm run build`.
 8. Set output directory to `dist/standalone`.
-9. Set entry file to `server.js`.
+9. Set entry file to `dist/standalone/server.cjs`.
 10. Set start command to `npm run start` when Hostinger shows that field.
 11. Add environment variable `HOST=0.0.0.0`. Let Hostinger provide `PORT`.
 12. Add the database and admin environment variables.
@@ -60,13 +60,15 @@ This keeps every code change reversible and gives the team a clear history.
 
 The build generates a self-contained Node.js server in `dist/standalone`. It
 keeps the generated Vinext runtime as `vinext-server.mjs` and installs a
-Hostinger-compatible `server.js` entry file. The Hostinger-only copy of the
+Hostinger-compatible `server.cjs` entry file. The Hostinger-only copy of the
 server bundle receives a local empty runtime environment, so it does not import
 the Cloudflare runtime package. The original Sites artifact remains unchanged.
-The repository `start` command uses `server.js`, and every build verifies the
+The repository `start` command uses `server.cjs`, and every build verifies the
 complete Hostinger output before deployment can pass.
 
-The Hostinger entry is CommonJS because Passenger loads it with `require()`.
+The Hostinger entry uses the `.cjs` extension because Passenger loads it with
+`require()`. This forces CommonJS mode even if Hostinger ignores a nested
+package type file.
 It immediately imports the ESM Vinext server without installing a custom Node
 loader. This avoids Passenger resolving files beside `lsnode.js` and its
 restriction on requiring an ESM graph with top-level await. A nested package

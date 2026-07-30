@@ -2,7 +2,8 @@ import { access, readFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { resolve } from "node:path";
 
-const hostingerEntry = resolve("dist/standalone/server.js");
+const hostingerEntry = resolve("dist/standalone/server.cjs");
+const compatibilityEntry = resolve("dist/standalone/server.js");
 const standaloneServer = resolve("dist/standalone/vinext-server.mjs");
 const hostingerBundle = resolve(
   "dist/standalone/dist/server/index.js",
@@ -15,6 +16,7 @@ try {
     [
       standaloneServer,
       hostingerEntry,
+      compatibilityEntry,
       hostingerBundle,
       hostingerPackage,
       vinextPackage,
@@ -60,5 +62,5 @@ if (
 }
 
 console.log(
-  "Validated Hostinger output: loader-free CommonJS server.js is ready.",
+  "Validated Hostinger output: loader-free CommonJS server.cjs is ready.",
 );
