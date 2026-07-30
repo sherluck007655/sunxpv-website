@@ -1,4 +1,29 @@
-# vinext-starter
+# SunX PV Technology website and CMS
+
+This repository contains the responsive SunX public website and its
+WordPress-style administration dashboard.
+
+## Main capabilities
+
+- responsive SunX website with orange, white, and light-grey branding
+- dashboard at `/admin/dashboard`
+- pages, posts, products, menus, submenus, form entries, media, and settings
+- first-party page-view analytics
+- SEO titles, descriptions, sitemap, robots rules, and canonical support
+- managed database and object storage for ChatGPT Sites
+- portable backup and a prepared MySQL schema for Hostinger
+- GitHub-first release workflow for safe long-term code changes
+
+## Management model
+
+Use the dashboard for regular business content. Use GitHub for code, layout,
+features, and advanced design work. Data is kept outside Git, so redeploying code
+does not overwrite dashboard content.
+
+See `docs/HOSTINGER_GITHUB_DEPLOYMENT.md` for the production workflow and
+`deploy/hostinger/mysql-schema.sql` for the Hostinger database handoff.
+
+## Current runtime
 
 A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and

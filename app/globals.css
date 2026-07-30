@@ -158,6 +158,10 @@ a {
   position: relative;
 }
 
+.managed-nav-link {
+  display: contents;
+}
+
 .nav-item > a::after {
   content: "";
   width: 6px;
@@ -214,6 +218,43 @@ a {
 .nav-drop a:hover {
   color: var(--orange-dark);
   background: var(--orange-soft);
+}
+
+.mobile-managed-group {
+  display: contents;
+}
+
+.mobile-nav-inner a.mobile-child {
+  padding-left: 28px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.managed-page-content {
+  max-width: 850px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.9;
+}
+
+.managed-page-content p {
+  margin: 0 0 1.5em;
+}
+
+.article-content > img {
+  width: 100%;
+  margin-bottom: 36px;
+  border-radius: 24px;
+}
+
+.managed-product-hero .series-product-visual {
+  background: var(--cream);
+  border: 1px solid var(--line);
+}
+
+.form-error {
+  color: #a33e31;
+  font-weight: 650;
 }
 
 .header-cta {
