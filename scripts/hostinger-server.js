@@ -1,13 +1,4 @@
-void (async () => {
-  const { register } = await import("node:module");
-  const { pathToFileURL } = await import("node:url");
+import { register } from "node:module";
 
-  register(
-    "./cloudflare-worker-loader.mjs",
-    pathToFileURL(process.argv[1]),
-  );
-  await import("./vinext-server.mjs");
-})().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+register("./cloudflare-worker-loader.mjs", import.meta.url);
+await import("./vinext-server.mjs");

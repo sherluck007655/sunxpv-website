@@ -65,6 +65,10 @@ compatibility layer required by the original Sites runtime before starting the
 Vinext server. The repository `start` command uses `server.js`, and every build
 verifies the complete Hostinger output before deployment can pass.
 
+The entry resolves its compatibility loader from its own module URL. This is
+required when Hostinger Passenger imports the entry through `lsnode.js`, where
+the process script path belongs to Hostinger rather than to the application.
+
 Hostinger currently documents automatic redeployment after GitHub updates for
 its managed Node.js Web App product. A VPS is also possible, but it requires
 manual Node.js, PM2, NGINX, SSL, backups, and security maintenance.
