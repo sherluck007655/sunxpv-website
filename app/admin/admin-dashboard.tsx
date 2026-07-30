@@ -263,7 +263,7 @@ const editorConfig: Record<
         key: "template",
         label: "Layout",
         type: "select",
-        options: ["standard", "landing", "full-width"],
+        options: ["legacy", "standard", "landing", "full-width"],
       },
       { key: "content", label: "Page content", type: "textarea" },
       { key: "parent_id", label: "Parent page id", placeholder: "Optional" },

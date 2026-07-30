@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 
 export async function requireAdminApi() {
@@ -11,7 +10,11 @@ export async function requireAdminApi() {
   }
 
   const configured = String(
-    (env as unknown as Record<string, unknown>).SUNX_ADMIN_EMAILS ?? "",
+    (
+      globalThis as typeof globalThis & {
+        __SUNX_RUNTIME_BINDINGS__?: Record<string, unknown>;
+      }
+    ).__SUNX_RUNTIME_BINDINGS__?.SUNX_ADMIN_EMAILS ?? "",
   )
     .split(",")
     .map((email) => email.trim().toLowerCase())

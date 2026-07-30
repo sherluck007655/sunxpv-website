@@ -1,5 +1,3 @@
-import { env } from "cloudflare:workers";
-
 type D1Result<T> = {
   results?: T[];
   success?: boolean;
@@ -203,15 +201,23 @@ const resources: Record<CmsResource, ResourceConfig> = {
 };
 
 function database(): D1DatabaseLike {
-  const binding = (env as unknown as { DB?: D1DatabaseLike }).DB;
+  const binding = runtimeBindings().DB as D1DatabaseLike | undefined;
   if (!binding) throw new Error("CMS database binding is unavailable");
   return binding;
 }
 
 export function mediaBucket(): R2BucketLike {
-  const binding = (env as unknown as { BUCKET?: R2BucketLike }).BUCKET;
+  const binding = runtimeBindings().BUCKET as R2BucketLike | undefined;
   if (!binding) throw new Error("Media storage binding is unavailable");
   return binding;
+}
+
+function runtimeBindings(): Record<string, unknown> {
+  return (
+    globalThis as typeof globalThis & {
+      __SUNX_RUNTIME_BINDINGS__?: Record<string, unknown>;
+    }
+  ).__SUNX_RUNTIME_BINDINGS__ ?? {};
 }
 
 function normalizedValue(value: unknown): unknown {
@@ -526,7 +532,7 @@ export async function getAnalytics() {
       db.prepare("SELECT COUNT(*) AS count FROM page_views").first<{ count: number }>(),
       db
         .prepare(
-          "SELECT COUNT(*) AS count FROM page_views WHERE created_at >= datetime('now', '-1 day')",
+          "SELECT COUNT(*) AS count FROM page_views WHERE created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-1 day')",
         )
         .first<{ count: number }>(),
       db
@@ -541,7 +547,7 @@ export async function getAnalytics() {
         .all<{ path: string; views: number }>(),
       db
         .prepare(
-          "SELECT substr(created_at, 1, 10) AS day, COUNT(*) AS views FROM page_views WHERE created_at >= datetime('now', '-14 days') GROUP BY day ORDER BY day ASC",
+          "SELECT substr(created_at, 1, 10) AS day, COUNT(*) AS views FROM page_views WHERE created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-14 days') GROUP BY day ORDER BY day ASC",
         )
         .all<{ day: string; views: number }>(),
       db

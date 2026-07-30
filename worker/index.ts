@@ -5,6 +5,8 @@ import handler from "vinext/server/app-router-entry";
 interface Env {
   ASSETS: Fetcher;
   DB: D1Database;
+  BUCKET?: unknown;
+  SUNX_ADMIN_EMAILS?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -27,6 +29,11 @@ interface ExecutionContext {
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    (
+      globalThis as typeof globalThis & {
+        __SUNX_RUNTIME_BINDINGS__?: Record<string, unknown>;
+      }
+    ).__SUNX_RUNTIME_BINDINGS__ = env as unknown as Record<string, unknown>;
     const url = new URL(request.url);
 
     if (url.pathname === "/_vinext/image") {

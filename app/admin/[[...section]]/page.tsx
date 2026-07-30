@@ -2,6 +2,8 @@ import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
 import AdminDashboard from "../admin-dashboard";
 import "../admin.css";
 
+export const dynamic = "force-dynamic";
+
 const sections = new Set([
   "dashboard",
   "pages",
