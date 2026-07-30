@@ -200,24 +200,33 @@ const resources: Record<CmsResource, ResourceConfig> = {
   },
 };
 
-function database(): D1DatabaseLike {
-  const binding = runtimeBindings().DB as D1DatabaseLike | undefined;
-  if (!binding) throw new Error("CMS database binding is unavailable");
-  return binding;
-}
-
-export function mediaBucket(): R2BucketLike {
-  const binding = runtimeBindings().BUCKET as R2BucketLike | undefined;
-  if (!binding) throw new Error("Media storage binding is unavailable");
-  return binding;
-}
-
-function runtimeBindings(): Record<string, unknown> {
+async function runtimeBindings(): Promise<Record<string, unknown>> {
+  try {
+    const runtime = (await import("cloudflare:workers")) as unknown as {
+      env?: Record<string, unknown>;
+    };
+    if (runtime.env) return runtime.env;
+  } catch {
+    // The Worker entry also exposes bindings for artifact validation and
+    // alternate runtimes where the Cloudflare module is not available.
+  }
   return (
     globalThis as typeof globalThis & {
       __SUNX_RUNTIME_BINDINGS__?: Record<string, unknown>;
     }
   ).__SUNX_RUNTIME_BINDINGS__ ?? {};
+}
+
+async function database(): Promise<D1DatabaseLike> {
+  const binding = (await runtimeBindings()).DB as D1DatabaseLike | undefined;
+  if (!binding) throw new Error("CMS database binding is unavailable");
+  return binding;
+}
+
+export async function mediaBucket(): Promise<R2BucketLike> {
+  const binding = (await runtimeBindings()).BUCKET as R2BucketLike | undefined;
+  if (!binding) throw new Error("Media storage binding is unavailable");
+  return binding;
 }
 
 function normalizedValue(value: unknown): unknown {
@@ -242,7 +251,7 @@ export async function listResource<T extends Record<string, unknown>>(
   resource: CmsResource,
 ): Promise<T[]> {
   const config = resources[resource];
-  const result = await database()
+  const result = await (await database())
     .prepare(`SELECT * FROM ${config.table} ORDER BY ${config.orderBy} LIMIT 1000`)
     .all<T>();
   return result.results ?? [];
@@ -282,7 +291,7 @@ export async function createResource(
       ? ` ON CONFLICT (${config.primaryKey}) DO UPDATE SET ${updates}`
       : "";
 
-  await database()
+  await (await database())
     .prepare(
       `INSERT INTO ${config.table} (${columns.join(", ")}) VALUES (${placeholders})${conflict}`,
     )
@@ -310,7 +319,7 @@ export async function updateResource(
   const now = new Date().toISOString();
   const assignments = [...entries.map(([field]) => `${field} = ?`), "updated_at = ?"];
 
-  await database()
+  await (await database())
     .prepare(
       `UPDATE ${config.table} SET ${assignments.join(", ")} WHERE ${config.primaryKey} = ?`,
     )
@@ -327,38 +336,39 @@ export async function deleteResource(
     await updateResource("pages", id, { status: "archived" });
     return;
   }
-  await database()
+  await (await database())
     .prepare(`DELETE FROM ${config.table} WHERE ${config.primaryKey} = ?`)
     .bind(id)
     .run();
 }
 
 export async function getPublicContent() {
+  const db = await database();
   const [pageRows, postRows, productRows, menuRows, settingRows] =
     await Promise.all([
-      database()
+      db
         .prepare(
           "SELECT * FROM pages ORDER BY menu_order ASC, updated_at DESC",
         )
         .all<Record<string, unknown>>(),
-      database()
+      db
         .prepare(
           "SELECT * FROM posts WHERE status = ? ORDER BY COALESCE(published_at, created_at) DESC",
         )
         .bind("published")
         .all<Record<string, unknown>>(),
-      database()
+      db
         .prepare(
           "SELECT * FROM products WHERE status = ? ORDER BY menu_order ASC, updated_at DESC",
         )
         .bind("active")
         .all<Record<string, unknown>>(),
-      database()
+      db
         .prepare(
           "SELECT * FROM menu_items WHERE is_active = 1 ORDER BY location ASC, sort_order ASC",
         )
         .all<Record<string, unknown>>(),
-      database()
+      db
         .prepare("SELECT * FROM settings ORDER BY key ASC")
         .all<Record<string, unknown>>(),
     ]);
@@ -426,7 +436,7 @@ const defaultMenus = [
 ];
 
 export async function ensureCmsDefaults() {
-  const db = database();
+  const db = await database();
   const existing = await db
     .prepare("SELECT value FROM settings WHERE key = ?")
     .bind("cms_initialized")
@@ -510,7 +520,7 @@ export async function recordPageView(input: {
 }) {
   const now = new Date().toISOString();
   const id = crypto.randomUUID();
-  await database()
+  await (await database())
     .prepare(
       "INSERT INTO page_views (id, path, referrer, session_id, device, created_at) VALUES (?, ?, ?, ?, ?, ?)",
     )
@@ -526,7 +536,7 @@ export async function recordPageView(input: {
 }
 
 export async function getAnalytics() {
-  const db = database();
+  const db = await database();
   const [total, today, unique, topPages, recentDays, contentCounts, leadCounts] =
     await Promise.all([
       db.prepare("SELECT COUNT(*) AS count FROM page_views").first<{ count: number }>(),
@@ -579,14 +589,14 @@ export async function getAnalytics() {
 }
 
 export async function mediaRecord(id: string) {
-  return database()
+  return (await database())
     .prepare("SELECT * FROM media WHERE id = ?")
     .bind(id)
     .first<Record<string, unknown>>();
 }
 
 export async function listMedia() {
-  const result = await database()
+  const result = await (await database())
     .prepare("SELECT * FROM media ORDER BY created_at DESC")
     .all<Record<string, unknown>>();
   return result.results ?? [];
@@ -601,7 +611,7 @@ export async function saveMedia(input: {
 }) {
   const now = new Date().toISOString();
   const url = `/api/media/${input.id}`;
-  await database()
+  await (await database())
     .prepare(
       "INSERT INTO media (id, name, url, content_type, size, alt_text, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     )
@@ -620,5 +630,8 @@ export async function saveMedia(input: {
 }
 
 export async function deleteMediaRecord(id: string) {
-  await database().prepare("DELETE FROM media WHERE id = ?").bind(id).run();
+  await (await database())
+    .prepare("DELETE FROM media WHERE id = ?")
+    .bind(id)
+    .run();
 }

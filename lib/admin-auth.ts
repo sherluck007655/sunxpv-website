@@ -9,13 +9,21 @@ export async function requireAdminApi() {
     };
   }
 
-  const configured = String(
+  let runtimeBindings =
     (
       globalThis as typeof globalThis & {
         __SUNX_RUNTIME_BINDINGS__?: Record<string, unknown>;
       }
-    ).__SUNX_RUNTIME_BINDINGS__?.SUNX_ADMIN_EMAILS ?? "",
-  )
+    ).__SUNX_RUNTIME_BINDINGS__ ?? {};
+  try {
+    const runtime = (await import("cloudflare:workers")) as unknown as {
+      env?: Record<string, unknown>;
+    };
+    runtimeBindings = runtime.env ?? runtimeBindings;
+  } catch {
+    // The explicit Worker binding remains the fallback outside Cloudflare.
+  }
+  const configured = String(runtimeBindings.SUNX_ADMIN_EMAILS ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);

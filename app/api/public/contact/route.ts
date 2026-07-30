@@ -29,7 +29,9 @@ export async function POST(request: Request) {
       source_path: clean(input.sourcePath, 300) || "/contact-us",
     });
     return Response.json({ ok: true }, { status: 201 });
-  } catch {
-    return Response.json({ error: "Your message could not be saved" }, { status: 400 });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Your message could not be saved";
+    return Response.json({ error: message }, { status: 400 });
   }
 }

@@ -66,7 +66,10 @@ function TrafficTracker({ path }: { path: string }) {
     const sessionKey = "sunx-session";
     let sessionId = sessionStorage.getItem(sessionKey);
     if (!sessionId) {
-      sessionId = crypto.randomUUID();
+      sessionId =
+        typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       sessionStorage.setItem(sessionKey, sessionId);
     }
     const width = window.innerWidth;
@@ -1718,13 +1721,16 @@ function ContactPage() {
           sourcePath: "/contact-us",
         }),
       });
-      if (!response.ok) throw new Error("The form could not be submitted");
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(result.error || "The form could not be submitted");
+      }
       form.reset();
       setSent(true);
-    } catch {
-      setFormError(
-        "We could not save your message. Please email info@sunxpv.com for immediate support.",
-      );
+    } catch (error) {
+      const reason =
+        error instanceof Error ? error.message : "The form could not be submitted";
+      setFormError(`${reason}. Please email info@sunxpv.com for immediate support.`);
     } finally {
       setSending(false);
     }

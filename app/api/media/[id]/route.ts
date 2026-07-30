@@ -7,7 +7,7 @@ export async function GET(
   const { id } = await params;
   const record = await mediaRecord(id);
   if (!record) return new Response("Not found", { status: 404 });
-  const object = await mediaBucket().get(id);
+  const object = await (await mediaBucket()).get(id);
   if (!object) return new Response("Not found", { status: 404 });
 
   return new Response(object.body, {

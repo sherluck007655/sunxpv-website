@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   const id = crypto.randomUUID();
-  await mediaBucket().put(id, await file.arrayBuffer(), {
+  await (await mediaBucket()).put(id, await file.arrayBuffer(), {
     httpMetadata: { contentType: file.type },
   });
   const item = await saveMedia({
@@ -49,7 +49,7 @@ export async function DELETE(request: Request) {
   if (!id) return Response.json({ error: "A media id is required" }, { status: 400 });
   const item = await mediaRecord(id);
   if (!item) return Response.json({ error: "Media not found" }, { status: 404 });
-  await mediaBucket().delete(id);
+  await (await mediaBucket()).delete(id);
   await deleteMediaRecord(id);
   return Response.json({ ok: true });
 }
