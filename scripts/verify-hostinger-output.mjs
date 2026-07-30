@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 
 const hostingerEntry = resolve("dist/standalone/server.js");
 const standaloneServer = resolve("dist/standalone/vinext-server.mjs");
-const cloudflareLoader = resolve(
-  "dist/standalone/cloudflare-worker-loader.mjs",
+const hostingerBundle = resolve(
+  "dist/standalone/dist/server/index.js",
 );
 const hostingerPackage = resolve("dist/standalone/package.json");
 const vinextPackage = resolve("dist/standalone/dist/package.json");
@@ -15,7 +15,7 @@ try {
     [
       standaloneServer,
       hostingerEntry,
-      cloudflareLoader,
+      hostingerBundle,
       hostingerPackage,
       vinextPackage,
     ].map((file) => access(file, constants.R_OK)),
@@ -33,6 +33,8 @@ const packageMetadata = JSON.parse(
 const vinextPackageMetadata = JSON.parse(
   await readFile(vinextPackage, "utf8"),
 );
+const hostingerBundleSource = await readFile(hostingerBundle, "utf8");
+const hostingerEntrySource = await readFile(hostingerEntry, "utf8");
 
 if (packageMetadata.type !== "commonjs") {
   console.error("Hostinger entry must be loaded as CommonJS");
@@ -44,6 +46,19 @@ if (vinextPackageMetadata.type !== "module") {
   process.exit(66);
 }
 
+if (hostingerBundleSource.includes("cloudflare:workers")) {
+  console.error("Hostinger server bundle must not import cloudflare:workers");
+  process.exit(66);
+}
+
+if (
+  hostingerEntrySource.includes("node:module") ||
+  hostingerEntrySource.includes("register(")
+) {
+  console.error("Hostinger entry must not install an ESM loader");
+  process.exit(66);
+}
+
 console.log(
-  "Validated Hostinger output: CommonJS dist/standalone/server.js is ready.",
+  "Validated Hostinger output: loader-free CommonJS server.js is ready.",
 );

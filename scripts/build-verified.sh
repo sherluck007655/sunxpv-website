@@ -28,9 +28,7 @@ timeout \
 install -m 0644 \
   "${SITES_PROJECT_ROOT}/dist/standalone/server.js" \
   "${SITES_PROJECT_ROOT}/dist/standalone/vinext-server.mjs"
-install -m 0644 \
-  "${script_dir}/cloudflare-worker-loader.mjs" \
-  "${SITES_PROJECT_ROOT}/dist/standalone/cloudflare-worker-loader.mjs"
+node "${script_dir}/patch-hostinger-bundle.mjs"
 install -m 0644 \
   "${script_dir}/hostinger-server.cjs" \
   "${SITES_PROJECT_ROOT}/dist/standalone/server.js"
