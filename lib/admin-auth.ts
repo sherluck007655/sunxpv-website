@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 
 export async function requireAdminApi() {
@@ -9,21 +10,9 @@ export async function requireAdminApi() {
     };
   }
 
-  let runtimeBindings =
-    (
-      globalThis as typeof globalThis & {
-        __SUNX_RUNTIME_BINDINGS__?: Record<string, unknown>;
-      }
-    ).__SUNX_RUNTIME_BINDINGS__ ?? {};
-  try {
-    const runtime = (await import("cloudflare:workers")) as unknown as {
-      env?: Record<string, unknown>;
-    };
-    runtimeBindings = runtime.env ?? runtimeBindings;
-  } catch {
-    // The explicit Worker binding remains the fallback outside Cloudflare.
-  }
-  const configured = String(runtimeBindings.SUNX_ADMIN_EMAILS ?? "")
+  const configured = String(
+    (env as unknown as Record<string, unknown>).SUNX_ADMIN_EMAILS ?? "",
+  )
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);

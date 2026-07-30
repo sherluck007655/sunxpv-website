@@ -64,6 +64,7 @@ manual Node.js, PM2, NGINX, SSL, backups, and security maintenance.
 - Confirm a published test page appears publicly.
 - Confirm `robots.txt` blocks `/admin` and `/api`.
 - Confirm `sitemap.xml` contains published content.
+- Confirm `/health` reports a healthy database connection.
 - Merge to `main`.
 - Watch the Hostinger deployment log.
 - Test desktop and mobile on the production domain.

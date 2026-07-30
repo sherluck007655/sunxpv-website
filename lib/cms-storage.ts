@@ -1,3 +1,5 @@
+import { env } from "cloudflare:workers";
+
 type D1Result<T> = {
   results?: T[];
   success?: boolean;
@@ -32,6 +34,123 @@ type R2BucketLike = {
   get: (key: string) => Promise<R2ObjectLike | null>;
   delete: (key: string) => Promise<void>;
 };
+
+let schemaReady: Promise<void> | null = null;
+
+const schemaStatements = [
+  `CREATE TABLE IF NOT EXISTS pages (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'draft',
+    content TEXT NOT NULL DEFAULT '',
+    template TEXT NOT NULL DEFAULT 'standard',
+    parent_id TEXT,
+    menu_order INTEGER NOT NULL DEFAULT 0,
+    seo_title TEXT NOT NULL DEFAULT '',
+    seo_description TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS posts (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'draft',
+    excerpt TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    featured_image TEXT NOT NULL DEFAULT '',
+    category TEXT NOT NULL DEFAULT 'News',
+    published_at TEXT,
+    seo_title TEXT NOT NULL DEFAULT '',
+    seo_description TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS products (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    family TEXT NOT NULL DEFAULT 'Solar Products',
+    status TEXT NOT NULL DEFAULT 'active',
+    summary TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    image TEXT NOT NULL DEFAULT '',
+    tag TEXT NOT NULL DEFAULT '',
+    specifications TEXT NOT NULL DEFAULT '[]',
+    menu_order INTEGER NOT NULL DEFAULT 0,
+    seo_title TEXT NOT NULL DEFAULT '',
+    seo_description TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS menu_items (
+    id TEXT PRIMARY KEY NOT NULL,
+    label TEXT NOT NULL,
+    url TEXT NOT NULL,
+    location TEXT NOT NULL DEFAULT 'header',
+    parent_id TEXT,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    open_new_tab INTEGER NOT NULL DEFAULT 0,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS form_submissions (
+    id TEXT PRIMARY KEY NOT NULL,
+    form_type TEXT NOT NULL DEFAULT 'contact',
+    name TEXT NOT NULL DEFAULT '',
+    email TEXT NOT NULL DEFAULT '',
+    phone TEXT NOT NULL DEFAULT '',
+    city TEXT NOT NULL DEFAULT '',
+    subject TEXT NOT NULL DEFAULT '',
+    message TEXT NOT NULL DEFAULT '',
+    product TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'new',
+    source_path TEXT NOT NULL DEFAULT '/',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS page_views (
+    id TEXT PRIMARY KEY NOT NULL,
+    path TEXT NOT NULL,
+    referrer TEXT NOT NULL DEFAULT '',
+    session_id TEXT NOT NULL DEFAULT '',
+    device TEXT NOT NULL DEFAULT 'desktop',
+    created_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS media (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    content_type TEXT NOT NULL DEFAULT 'application/octet-stream',
+    size INTEGER NOT NULL DEFAULT 0,
+    alt_text TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY NOT NULL,
+    value TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS pages_status_idx ON pages (status)",
+  "CREATE INDEX IF NOT EXISTS pages_menu_order_idx ON pages (menu_order)",
+  "CREATE INDEX IF NOT EXISTS posts_status_idx ON posts (status)",
+  "CREATE INDEX IF NOT EXISTS posts_published_at_idx ON posts (published_at)",
+  "CREATE INDEX IF NOT EXISTS products_status_idx ON products (status)",
+  "CREATE INDEX IF NOT EXISTS products_family_idx ON products (family)",
+  "CREATE INDEX IF NOT EXISTS products_menu_order_idx ON products (menu_order)",
+  "CREATE INDEX IF NOT EXISTS menu_location_idx ON menu_items (location)",
+  "CREATE INDEX IF NOT EXISTS menu_parent_idx ON menu_items (parent_id)",
+  "CREATE INDEX IF NOT EXISTS menu_sort_order_idx ON menu_items (sort_order)",
+  "CREATE INDEX IF NOT EXISTS form_status_idx ON form_submissions (status)",
+  "CREATE INDEX IF NOT EXISTS form_created_at_idx ON form_submissions (created_at)",
+  "CREATE INDEX IF NOT EXISTS page_views_path_idx ON page_views (path)",
+  "CREATE INDEX IF NOT EXISTS page_views_created_at_idx ON page_views (created_at)",
+  "CREATE INDEX IF NOT EXISTS page_views_session_idx ON page_views (session_id)",
+  "CREATE INDEX IF NOT EXISTS media_created_at_idx ON media (created_at)",
+];
 
 export type CmsResource =
   | "pages"
@@ -200,31 +319,27 @@ const resources: Record<CmsResource, ResourceConfig> = {
   },
 };
 
-async function runtimeBindings(): Promise<Record<string, unknown>> {
-  try {
-    const runtime = (await import("cloudflare:workers")) as unknown as {
-      env?: Record<string, unknown>;
-    };
-    if (runtime.env) return runtime.env;
-  } catch {
-    // The Worker entry also exposes bindings for artifact validation and
-    // alternate runtimes where the Cloudflare module is not available.
-  }
-  return (
-    globalThis as typeof globalThis & {
-      __SUNX_RUNTIME_BINDINGS__?: Record<string, unknown>;
-    }
-  ).__SUNX_RUNTIME_BINDINGS__ ?? {};
-}
-
 async function database(): Promise<D1DatabaseLike> {
-  const binding = (await runtimeBindings()).DB as D1DatabaseLike | undefined;
+  const binding = (env as unknown as { DB?: D1DatabaseLike }).DB;
   if (!binding) throw new Error("CMS database binding is unavailable");
+  if (!schemaReady) {
+    schemaReady = initializeSchema(binding).catch((error) => {
+      schemaReady = null;
+      throw error;
+    });
+  }
+  await schemaReady;
   return binding;
 }
 
+async function initializeSchema(binding: D1DatabaseLike) {
+  for (const statement of schemaStatements) {
+    await binding.prepare(statement).run();
+  }
+}
+
 export async function mediaBucket(): Promise<R2BucketLike> {
-  const binding = (await runtimeBindings()).BUCKET as R2BucketLike | undefined;
+  const binding = (env as unknown as { BUCKET?: R2BucketLike }).BUCKET;
   if (!binding) throw new Error("Media storage binding is unavailable");
   return binding;
 }
