@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import SunXSite from "../site-client";
-import { getPublicContent } from "@/lib/cms-storage";
+import { findSitePost, sitePosts } from "@/content/posts";
+import { pageSeo, staticPaths } from "@/content/seo";
 
 const fallbackTitle = "SunX PV Technology | Solar Inverters & Lithium Batteries";
 const fallbackDescription =
@@ -12,45 +14,38 @@ export async function generateMetadata({
   params: Promise<{ slug?: string[] }>;
 }): Promise<Metadata> {
   const { slug = [] } = await params;
-  const path = slug.join("/");
-  if (!path) return {};
+  const path = `/${slug.join("/")}`.replace(/\/$/, "") || "/";
+  const post = path.startsWith("/blogs/")
+    ? findSitePost(path.replace("/blogs/", ""))
+    : undefined;
+  const page = pageSeo[path];
+  const title = post?.seoTitle || page?.title || fallbackTitle;
+  const description =
+    post?.seoDescription || page?.description || fallbackDescription;
+  const image = post?.featuredImage || page?.image;
 
-  try {
-    const content = await getPublicContent();
-    const page = content.pages.find(
-      (item) => item.slug === path && item.status === "published",
-    );
-    const post = path.startsWith("blogs/")
-      ? content.posts.find((item) => item.slug === path.replace(/^blogs\//, ""))
-      : undefined;
-    const product = path.startsWith("products/")
-      ? content.products.find(
-          (item) => item.slug === path.replace(/^products\//, ""),
-        )
-      : undefined;
-    const item = page || post || product;
-    if (!item) return {};
-    const title = String(
-      item.seo_title || item.title || item.name || fallbackTitle,
-    );
-    const description = String(
-      item.seo_description || item.excerpt || item.summary || fallbackDescription,
-    );
-    const image = String(item.featured_image || item.image || "");
-    return {
+  return {
+    title: path === "/" ? { absolute: title } : title,
+    description,
+    alternates: { canonical: path === "/" ? "/" : `${path}/` },
+    openGraph: {
       title,
       description,
-      alternates: { canonical: `/${path}/` },
-      openGraph: {
-        title,
-        description,
-        type: post ? "article" : "website",
-        ...(image ? { images: [image] } : {}),
-      },
-    };
-  } catch {
-    return {};
-  }
+      type: post ? "article" : "website",
+      ...(post ? { publishedTime: post.publishedAt, modifiedTime: post.updatedAt } : {}),
+      ...(image ? { images: [image] } : {}),
+    },
+  };
+}
+
+export function generateStaticParams() {
+  return [
+    { slug: [] },
+    ...staticPaths
+      .filter((path) => path !== "/")
+      .map((path) => ({ slug: path.slice(1).split("/") })),
+    ...sitePosts.map((post) => ({ slug: ["blogs", post.slug] })),
+  ];
 }
 
 export default async function Page({
@@ -59,5 +54,10 @@ export default async function Page({
   params: Promise<{ slug?: string[] }>;
 }) {
   const { slug = [] } = await params;
-  return <SunXSite path={`/${slug.join("/")}`} />;
+  const path = `/${slug.join("/")}`.replace(/\/$/, "") || "/";
+  const isPost = path.startsWith("/blogs/")
+    ? Boolean(findSitePost(path.replace("/blogs/", "")))
+    : false;
+  if (!pageSeo[path] && !isPost) notFound();
+  return <SunXSite path={path} />;
 }

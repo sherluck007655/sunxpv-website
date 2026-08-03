@@ -1,106 +1,70 @@
-# SunX GitHub and Hostinger workflow
+# Hostinger GitHub deployment
 
-## Recommended production setup
+## Recommended Hostinger setup
 
-Use a private GitHub repository as the source of truth. Connect that repository
-to a Hostinger Node.js Web App. Hostinger can automatically build and redeploy
-the application after changes are pushed to the selected production branch.
+Use a Hostinger managed Node.js Web App connected to the GitHub repository. A
+VPS is not required for this website.
 
-The website has two independent management paths:
+Use these build settings:
 
-1. The SunX dashboard manages business content stored in the database.
-2. GitHub manages code, layouts, components, integrations, and larger design
-   changes.
+- Framework: Next.js
+- Branch: `main`
+- Root directory: `./`
+- Node version: `22.x`
+- Install command: `npm ci`
+- Build command: `npm run build:hostinger`
+- Output directory: `.next/standalone`
+- Entry file: `server.js`
 
-Dashboard content is never stored in Git. A code deployment therefore does not
-overwrite pages, products, inquiries, or analytics.
+When the Next.js preset hides output and entry settings, leave those fields on
+automatic and only override the build command. Do not use `dist/standalone` or
+any Vinext server file.
 
-## Current and future data adapters
+## Database setup
 
-The current ChatGPT Sites deployment uses managed D1 for CMS records and managed
-R2 for uploaded media. All browser screens talk to internal API routes, and only
-`lib/cms-storage.ts` talks directly to those services.
+1. Create a MySQL database in hPanel.
+2. Create a database user and grant it access to that database.
+3. Open phpMyAdmin and select the new database.
+4. Import `deploy/hostinger/mysql-schema.sql`.
+5. Add the `MYSQL_` variables from `.env.example` to the Web App environment.
 
-For Hostinger, keep the API and dashboard unchanged and replace that single
-storage module with a MySQL and persistent-file adapter. The matching MySQL
-schema is in `deploy/hostinger/mysql-schema.sql`. Export a JSON backup from
-Dashboard → Settings before migration.
+## Email notification setup
 
-Do not point the production domain to Hostinger until the MySQL adapter is
-installed and a backup has been imported successfully.
+Create or select the mailbox that will send notifications. Add the `SMTP_`
+variables and `ENQUIRY_NOTIFICATION_EMAIL` from `.env.example` to Hostinger.
+The recipient can be the same mailbox or a separate sales mailbox.
 
-## GitHub branch flow
+The form workflow is:
 
-- `main` is production.
-- Each ChatGPT change uses a short feature branch.
-- Review the preview.
-- Merge the approved pull request into `main`.
-- Hostinger automatically redeploys `main`.
+1. Validate the enquiry.
+2. Save it in MySQL.
+3. Send the email notification.
+4. Mark the database row as notified.
 
-This keeps every code change reversible and gives the team a clear history.
+An SMTP problem does not delete or reject an enquiry that was already stored.
 
-## Hostinger managed Node.js setup
+## First deployment checklist
 
-1. In hPanel, add a Node.js Web App.
-2. Choose Import Git Repository and authorize the private GitHub repository.
-3. Select the production branch, normally `main`.
-4. Open the advanced build settings and choose framework `Other`.
-5. Use Node.js `22.x`.
-6. Use install command `npm ci`.
-7. Use build command `npm run build`.
-8. Set output directory to `dist/standalone`.
-9. Set entry file to `dist/standalone/server.cjs`.
-10. Set start command to `npm run start` when Hostinger shows that field.
-11. Add environment variable `HOST=0.0.0.0`. Let Hostinger provide `PORT`.
-12. Add the database and admin environment variables.
-13. Create a MySQL database and import `deploy/hostinger/mysql-schema.sql`.
-14. Run the production deployment.
-15. Test the temporary Hostinger URL before connecting `sunxpv.com`.
-16. Connect the domain, enable SSL, and verify the sitemap and contact form.
+- Confirm the Hostinger build log says the Next.js build completed.
+- Confirm `.next/standalone/server.js` is the selected entry.
+- Open the temporary Hostinger domain and test the home page.
+- Open `/health`; it should report a connected database.
+- Submit a contact form test.
+- Confirm the test exists in `contact_enquiries` in phpMyAdmin.
+- Confirm the notification email arrived.
+- Test the email, telephone and WhatsApp links.
+- Connect the production domain and enable SSL.
+- Verify `/robots.txt` and `/sitemap.xml`.
 
-The build generates a self-contained Node.js server in `dist/standalone`. It
-keeps the generated Vinext runtime as `vinext-server.mjs` and installs a
-Hostinger-compatible `server.cjs` entry file. The Hostinger-only copy of the
-server bundle receives a local empty runtime environment, so it does not import
-the Cloudflare runtime package. The original Sites artifact remains unchanged.
-The repository `start` command uses `server.cjs`, and every build verifies the
-complete Hostinger output before deployment can pass.
+## GitHub release flow
 
-The Hostinger entry uses the `.cjs` extension because Passenger loads it with
-`require()`. This forces CommonJS mode even if Hostinger ignores a nested
-package type file.
-It immediately imports the ESM Vinext server without installing a custom Node
-loader. This avoids Passenger resolving files beside `lsnode.js` and its
-restriction on requiring an ESM graph with top-level await. A nested package
-marker keeps the generated Vinext runtime ESM while the outer Hostinger entry
-remains CommonJS.
+The `main` branch is production. For each approved content or design update:
 
-Hostinger keeps backend application builds outside `public_html`, in its
-managed `nodejs` deployment directory. The public directory normally contains
-only a hidden `.htaccess` routing file. An apparently empty `public_html` folder
-therefore does not mean the Node.js build files are missing.
+1. ChatGPT changes the source files.
+2. The standard Next.js build is tested.
+3. The change is committed and pushed to GitHub.
+4. Hostinger automatically builds and deploys `main`.
+5. The public URL is checked after deployment.
 
-Hostinger currently documents automatic redeployment after GitHub updates for
-its managed Node.js Web App product. A VPS is also possible, but it requires
-manual Node.js, PM2, NGINX, SSL, backups, and security maintenance.
-
-## Safe release checklist
-
-- Download a dashboard backup.
-- Confirm the pull request contains only the intended code changes.
-- Test the website and `/admin/dashboard` on the preview.
-- Confirm forms create a dashboard entry.
-- Confirm a published test page appears publicly.
-- Confirm `robots.txt` blocks `/admin` and `/api`.
-- Confirm `sitemap.xml` contains published content.
-- Confirm `/health` reports a healthy database connection.
-- Merge to `main`.
-- Watch the Hostinger deployment log.
-- Test desktop and mobile on the production domain.
-
-## Rollback
-
-If a code release fails, redeploy the previous successful Git commit in
-Hostinger. Database content remains separate and is not rolled back with code.
-If content is damaged, restore from the exported CMS backup or the Hostinger
-database backup.
+If a release fails, redeploy the previous successful Git commit in Hostinger.
+The MySQL enquiry data remains separate from code deployments.

@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  createContext,
-  FormEvent,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { FormEvent, useMemo, useState } from "react";
+import { findSitePost, sitePosts, type SitePost } from "@/content/posts";
 
 type Product = {
   name: string;
@@ -17,78 +11,6 @@ type Product = {
   href: string;
   tag?: string;
 };
-
-type CmsRecord = Record<string, string | number | boolean | null>;
-
-type CmsContent = {
-  pages: CmsRecord[];
-  posts: CmsRecord[];
-  products: CmsRecord[];
-  menus: CmsRecord[];
-  settings: Record<string, string>;
-};
-
-const emptyCms: CmsContent = {
-  pages: [],
-  posts: [],
-  products: [],
-  menus: [],
-  settings: {},
-};
-
-const CmsContext = createContext<CmsContent>(emptyCms);
-
-function CmsProvider({ children }: { children: React.ReactNode }) {
-  const [content, setContent] = useState<CmsContent>(emptyCms);
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/public/content")
-      .then((response) => response.json())
-      .then((data: CmsContent) => {
-        if (active) setContent(data);
-      })
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  return <CmsContext.Provider value={content}>{children}</CmsContext.Provider>;
-}
-
-function useCms() {
-  return useContext(CmsContext);
-}
-
-function TrafficTracker({ path }: { path: string }) {
-  useEffect(() => {
-    const sessionKey = "sunx-session";
-    let sessionId = sessionStorage.getItem(sessionKey);
-    if (!sessionId) {
-      sessionId =
-        typeof crypto.randomUUID === "function"
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      sessionStorage.setItem(sessionKey, sessionId);
-    }
-    const width = window.innerWidth;
-    const device = width < 700 ? "mobile" : width < 1050 ? "tablet" : "desktop";
-    void fetch("/api/public/track", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        path,
-        referrer: document.referrer,
-        sessionId,
-        device,
-      }),
-      keepalive: true,
-    }).catch(() => undefined);
-  }, [path]);
-
-  return null;
-}
 
 type ModelSpec = {
   name: string;
@@ -520,11 +442,6 @@ const installers = [
 
 function Header({ path }: { path: string }) {
   const [open, setOpen] = useState(false);
-  const { menus } = useCms();
-  const managedMenus = menus
-    .filter((item) => item.location === "header")
-    .sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0));
-  const topMenus = managedMenus.filter((item) => !item.parent_id);
   const current = (href: string) =>
     href === "/" ? path === "/" : path.startsWith(href.replace(/\/$/, ""));
 
@@ -541,43 +458,7 @@ function Header({ path }: { path: string }) {
             <img src="/images/sunx-logo.png" alt="SunX PV Technology" />
           </a>
           <nav className="desktop-nav" aria-label="Main navigation">
-            {topMenus.length
-              ? topMenus.map((item) => {
-                  const children = managedMenus.filter(
-                    (child) => child.parent_id === item.id,
-                  );
-                  const link = (
-                    <a
-                      className={current(String(item.url)) ? "active" : ""}
-                      href={String(item.url)}
-                      target={item.open_new_tab ? "_blank" : undefined}
-                    >
-                      {String(item.label)}
-                    </a>
-                  );
-                  return children.length ? (
-                    <div className="nav-item" key={String(item.id)}>
-                      {link}
-                      <div className="nav-drop">
-                        {children.map((child) => (
-                          <a
-                            href={String(child.url)}
-                            target={child.open_new_tab ? "_blank" : undefined}
-                            key={String(child.id)}
-                          >
-                            {String(child.label)}
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="managed-nav-link" key={String(item.id)}>
-                      {link}
-                    </span>
-                  );
-                })
-              : (
-                <>
+            <>
                   <div className="nav-item">
                     {navLink("/about-us/", "Company")}
                     <div className="nav-drop">
@@ -612,8 +493,7 @@ function Header({ path }: { path: string }) {
                     </div>
                   </div>
                   {navLink("/blogs/", "News & Media")}
-                </>
-              )}
+            </>
           </nav>
           <a className="header-cta" href="/contact-us/">
             Get Support
@@ -632,25 +512,7 @@ function Header({ path }: { path: string }) {
         </div>
         <div className={`mobile-nav ${open ? "open" : ""}`}>
           <div className="shell mobile-nav-inner" onClick={() => setOpen(false)}>
-            {topMenus.length ? (
-              topMenus.map((item) => (
-                <div className="mobile-managed-group" key={String(item.id)}>
-                  <a href={String(item.url)}>{String(item.label)}</a>
-                  {managedMenus
-                    .filter((child) => child.parent_id === item.id)
-                    .map((child) => (
-                      <a
-                        className="mobile-child"
-                        href={String(child.url)}
-                        key={String(child.id)}
-                      >
-                        {String(child.label)}
-                      </a>
-                    ))}
-                </div>
-              ))
-            ) : (
-              <>
+            <>
                 <span>Company</span>
                 <a href="/about-us/">Profile</a>
                 <span>Products</span>
@@ -666,8 +528,7 @@ function Header({ path }: { path: string }) {
                 <a href="/sunx-product-warranty/">Warranty</a>
                 <a href="/contact-us/">Contact Us</a>
                 <a href="/blogs/">News & Media</a>
-              </>
-            )}
+            </>
           </div>
         </div>
       </header>
@@ -707,7 +568,7 @@ function Footer() {
           <p>Office #15 Peshawar Business Center, Ring Road, Peshawar, KPK, Pakistan</p>
           <a href="tel:+923429470099">+92 342 94 700 99</a>
           <a href="tel:+923365003656">+92 336 500 3656</a>
-          <a href="mailto:info@sunx.com">info@sunx.com</a>
+          <a href="mailto:info@sunxpv.com">info@sunxpv.com</a>
         </div>
       </div>
       <div className="shell footer-bottom">
@@ -1155,20 +1016,10 @@ function AboutPage() {
 }
 
 function ProductsPage() {
-  const { products } = useCms();
-  const managedProducts: Product[] = products.map((product) => ({
-    name: String(product.name),
-    family: String(product.family || "Solar Products"),
-    description: String(product.summary || product.description || ""),
-    image: String(product.image || "/images/prime-product.png"),
-    href: `/products/${String(product.slug)}/`,
-    tag: product.tag ? String(product.tag) : undefined,
-  }));
-  const displayed = managedProducts.length ? managedProducts : productCards;
-  const inverters = displayed.filter(
+  const inverters = productCards.filter(
     (product) => !product.family.toLowerCase().includes("batter"),
   );
-  const batteries = displayed.filter((product) =>
+  const batteries = productCards.filter((product) =>
     product.family.toLowerCase().includes("batter"),
   );
   return (
@@ -1707,7 +1558,7 @@ function ContactPage() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     try {
-      const response = await fetch("/api/public/contact", {
+      const response = await fetch("/api/public/contact/", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -1717,7 +1568,7 @@ function ContactPage() {
           city: formData.get("city"),
           subject: formData.get("subject"),
           message: formData.get("message"),
-          formType: "contact",
+          website: formData.get("website"),
           sourcePath: "/contact-us",
         }),
       });
@@ -1730,7 +1581,7 @@ function ContactPage() {
     } catch (error) {
       const reason =
         error instanceof Error ? error.message : "The form could not be submitted";
-      setFormError(`${reason}. Please email info@sunxpv.com for immediate support.`);
+      setFormError(`${reason} Please email info@sunxpv.com or contact us on WhatsApp.`);
     } finally {
       setSending(false);
     }
@@ -1782,10 +1633,18 @@ function ContactPage() {
             </div>
             <div className="contact-detail">
               <span>Email</span>
-              <a href="mailto:info@sunx.com">info@sunx.com</a>
+              <a href="mailto:info@sunxpv.com">info@sunxpv.com</a>
+            </div>
+            <div className="contact-detail">
+              <span>WhatsApp</span>
+              <a href="https://wa.me/923429470099">+92 342 947 0099</a>
             </div>
           </div>
           <form className="contact-form" onSubmit={submit}>
+            <label className="form-honeypot" aria-hidden="true">
+              Website
+              <input name="website" tabIndex={-1} autoComplete="off" />
+            </label>
             <div className="form-grid">
               <label>
                 Full Name
@@ -1833,8 +1692,7 @@ function ContactPage() {
             </button>
             {sent ? (
               <p className="form-success" role="status">
-                Thank you. Your message details are ready. Please also contact
-                SunX at info@sunx.com for immediate support.
+                Thank you. Your enquiry has been saved successfully.
               </p>
             ) : null}
             {formError ? (
@@ -1880,21 +1738,6 @@ function FaqSection() {
 }
 
 function BlogsPage() {
-  const { posts: managedPosts } = useCms();
-  const fallbackPosts = [
-    ["Product Guide", "Choose the right SunX inverter series", "Understand how Sun Prime, Sun Pro, Sun Ultra, and Sun Max fit different residential and commercial needs.", "/images/pro-hero.png", "/products/"],
-    ["Energy Storage", "Why LiFePO4 battery storage matters", "SunX lithium battery systems combine smart battery management, long life, and scalable energy storage.", "/images/powerwall-standard.png", "/products/#batteries"],
-    ["Partner Network", "Grow with the SunX dealer network", "Authorized partners receive product range access, marketing support, territory opportunities, and loyalty rewards.", "/images/dealer-network.png", "/sunx-dealers/"],
-  ];
-  const posts = managedPosts.length
-    ? managedPosts.map((post) => [
-        String(post.category || "News"),
-        String(post.title),
-        String(post.excerpt || post.content || ""),
-        String(post.featured_image || "/images/hero-products.webp"),
-        `/blogs/${String(post.slug)}/`,
-      ])
-    : fallbackPosts;
   return (
     <main>
       <PageHero
@@ -1904,16 +1747,16 @@ function BlogsPage() {
       />
       <section className="section">
         <div className="shell blog-grid">
-          {posts.map(([tag, title, text, image, href]) => (
-            <article key={title}>
-              <a className="blog-image" href={href}>
-                <img src={image} alt="" />
+          {sitePosts.map((post) => (
+            <article key={post.slug}>
+              <a className="blog-image" href={`/blogs/${post.slug}/`}>
+                <img src={post.featuredImage} alt={post.title} loading="lazy" />
               </a>
               <div>
-                <span>{tag}</span>
-                <h2>{title}</h2>
-                <p>{text}</p>
-                <a className="text-link" href={href}>
+                <span>{post.category}</span>
+                <h2>{post.title}</h2>
+                <p>{post.excerpt}</p>
+                <a className="text-link" href={`/blogs/${post.slug}/`}>
                   Read more <b>→</b>
                 </a>
               </div>
@@ -1926,102 +1769,31 @@ function BlogsPage() {
   );
 }
 
-function ManagedPage({ page }: { page: CmsRecord }) {
+function BlogPost({ post }: { post: SitePost }) {
   return (
     <main>
       <PageHero
-        eyebrow="SunX"
-        title={String(page.title)}
-        text={String(page.seo_description || "SunX PV Technology")}
-      />
-      <section className="section">
-        <article className="shell managed-page-content">
-          {String(page.content || "")
-            .split(/\n{2,}/)
-            .filter(Boolean)
-            .map((paragraph, index) => (
-              <p key={`${index}-${paragraph.slice(0, 20)}`}>{paragraph}</p>
-            ))}
-        </article>
-      </section>
-      <SupportGrid />
-    </main>
-  );
-}
-
-function ManagedPost({ post }: { post: CmsRecord }) {
-  return (
-    <main>
-      <PageHero
-        eyebrow={String(post.category || "News & Media")}
-        title={String(post.title)}
-        text={String(post.excerpt || "")}
+        eyebrow={post.category}
+        title={post.title}
+        text={post.excerpt}
       />
       <section className="section">
         <article className="shell managed-page-content article-content">
-          {post.featured_image ? (
-            <img src={String(post.featured_image)} alt={String(post.title)} />
-          ) : null}
-          {String(post.content || "")
-            .split(/\n{2,}/)
-            .filter(Boolean)
-            .map((paragraph, index) => (
-              <p key={`${index}-${paragraph.slice(0, 20)}`}>{paragraph}</p>
+          <img src={post.featuredImage} alt={post.title} />
+          {post.content.map((paragraph, index) => (
+              <p key={`${index}-${paragraph.slice(0, 20)}`}>
+                {paragraph}
+              </p>
             ))}
+          <p className="article-date">
+            Published {new Date(post.publishedAt).toLocaleDateString("en-PK", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
         </article>
       </section>
-    </main>
-  );
-}
-
-function ManagedProduct({ product }: { product: CmsRecord }) {
-  let specifications: { label?: string; value?: string }[] = [];
-  try {
-    specifications = JSON.parse(String(product.specifications || "[]"));
-  } catch {
-    specifications = [];
-  }
-  return (
-    <main>
-      <section className="series-hero">
-        <div className="shell series-hero-grid managed-product-hero">
-          <div>
-            <p className="eyebrow">{String(product.family || "SunX product")}</p>
-            <h1>{String(product.name)}</h1>
-            <p className="series-subtitle">{String(product.summary || "")}</p>
-            <p>{String(product.description || "")}</p>
-            <div className="hero-actions">
-              <a className="button primary" href="/contact-us/">
-                Request information
-              </a>
-              <a className="button secondary" href="/download-center/">
-                Downloads
-              </a>
-            </div>
-          </div>
-          <div className="series-product-visual">
-            <img
-              src={String(product.image || "/images/prime-product.png")}
-              alt={String(product.name)}
-            />
-          </div>
-        </div>
-      </section>
-      {specifications.length ? (
-        <section className="section">
-          <div className="shell">
-            <SectionHeading eyebrow="Product details" title="Specifications" />
-            <div className="spec-table">
-              {specifications.map((spec, index) => (
-                <div key={`${spec.label}-${index}`}>
-                  <span>{spec.label || "Specification"}</span>
-                  <strong>{spec.value || "—"}</strong>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
       <SupportGrid />
     </main>
   );
@@ -2111,20 +1883,11 @@ function NotFoundPage() {
 }
 
 function SunXRouter({ path }: { path: string }) {
-  const cms = useCms();
   const cleanPath = path !== "/" ? path.replace(/\/+$/, "") : "/";
   const cleanSlug = cleanPath === "/" ? "" : cleanPath.replace(/^\/|\/$/g, "");
-  const routeRecord = cms.pages.find((item) => item.slug === cleanSlug);
   let page;
 
-  if (routeRecord?.status === "archived") {
-    page = <NotFoundPage />;
-  } else if (
-    routeRecord?.status === "published" &&
-    routeRecord.template !== "legacy"
-  ) {
-    page = <ManagedPage page={routeRecord} />;
-  } else switch (cleanPath) {
+  switch (cleanPath) {
     case "/":
     case "/home-2":
     case "/homepage":
@@ -2179,27 +1942,10 @@ function SunXRouter({ path }: { path: string }) {
       break;
     default:
       {
-        const slug = cleanSlug;
-        const managedPage = cms.pages.find(
-          (item) => item.slug === slug && item.status === "published",
-        );
-        const managedPost =
+        const post =
           cleanPath.startsWith("/blogs/") &&
-          cms.posts.find((item) => item.slug === slug.replace(/^blogs\//, ""));
-        const managedProduct =
-          cleanPath.startsWith("/products/") &&
-          cms.products.find(
-            (item) => item.slug === slug.replace(/^products\//, ""),
-          );
-        page = managedPage ? (
-          <ManagedPage page={managedPage} />
-        ) : managedPost ? (
-          <ManagedPost post={managedPost} />
-        ) : managedProduct ? (
-          <ManagedProduct product={managedProduct} />
-        ) : (
-          <NotFoundPage />
-        );
+          findSitePost(cleanSlug.replace(/^blogs\//, ""));
+        page = post ? <BlogPost post={post} /> : <NotFoundPage />;
       }
   }
 
@@ -2208,7 +1954,6 @@ function SunXRouter({ path }: { path: string }) {
       <Header path={cleanPath} />
       {page}
       <Footer />
-      <TrafficTracker path={cleanPath} />
       <a className="floating-contact" href="https://wa.me/923429470099" aria-label="Contact SunX on WhatsApp">
         <span>WA</span>
       </a>
@@ -2217,9 +1962,5 @@ function SunXRouter({ path }: { path: string }) {
 }
 
 export default function SunXSite({ path }: { path: string }) {
-  return (
-    <CmsProvider>
-      <SunXRouter path={path} />
-    </CmsProvider>
-  );
+  return <SunXRouter path={path} />;
 }

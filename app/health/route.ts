@@ -1,8 +1,10 @@
-import { getPublicContent } from "@/lib/cms-storage";
+import { pingDatabase } from "@/lib/mysql";
+
+export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    await getPublicContent();
+    await pingDatabase();
     return Response.json(
       { status: "healthy", database: "connected" },
       { headers: { "cache-control": "no-store" } },
