@@ -41,16 +41,17 @@ Open `http://localhost:3000`.
 ## Production commands
 
 ```bash
-npm run build:hostinger
+npm run build
 npm run start
 ```
 
-The Hostinger build creates `.next/standalone/server.js`, a CommonJS-compatible
-Next.js server that can be loaded by Hostinger Passenger without the Vinext ESM
-loader used by the previous version.
+The full build keeps the ChatGPT Sites preview artifact and creates the standard
+Next.js Hostinger server in both `.next/standalone/server.js` and
+`dist/standalone/server.js`. Both Hostinger entry files are explicitly marked as
+CommonJS so Passenger can load them without the Vinext ESM error.
 
-The separate `npm run build` command is retained only for the ChatGPT Sites
-preview lifecycle. Hostinger must use `npm run build:hostinger`.
+`npm run build:hostinger` remains available when only the Hostinger output is
+needed.
 
 ## Contact enquiries
 
