@@ -13,12 +13,13 @@ Use these build settings:
 - Node version: `22.x`
 - Install command: `npm ci`
 - Build command: `npm run build`
-- Output directory: `dist/standalone`
-- Entry file: `server.js`
+- Output directory: use the automatic Next.js value
+- Entry file: use the automatic Next.js value
 
-The build replaces the old Vinext file at `dist/standalone/server.js` with a
-standard CommonJS Next.js server. This keeps the existing Hostinger output and
-entry settings compatible while removing the ESM top-level-await failure.
+Do not select Other, do not point Hostinger to `dist/standalone`, and do not
+enter a custom Passenger file. Hostinger detects the standard `.next` build,
+stores backend files in its managed `nodejs` directory and creates the routing
+`.htaccess` file in `public_html`.
 
 ## Database setup
 
@@ -46,7 +47,8 @@ An SMTP problem does not delete or reject an enquiry that was already stored.
 ## First deployment checklist
 
 - Confirm the Hostinger build log says the Next.js build completed.
-- Confirm `dist/standalone/server.js` is the selected entry.
+- Confirm Hostinger detected the project as Next.js.
+- Confirm no custom output directory or entry file overrides are active.
 - Open the temporary Hostinger domain and test the home page.
 - Open `/health`; it should report a connected database.
 - Submit a contact form test.

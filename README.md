@@ -12,8 +12,9 @@ for Hostinger managed Node.js hosting and a GitHub-first publishing workflow.
 - SMTP email notification for each saved enquiry
 - static SEO metadata, canonical URLs, sitemap and robots rules
 
-The website does not depend on Cloudflare Worker APIs, D1, R2, ChatGPT sign-in,
-or a browser-based CMS. GitHub is the source of truth for code, text and images.
+The website does not depend on Vinext, Vite, Cloudflare Workers, D1, R2,
+ChatGPT sign-in, a generated Passenger server, or a browser-based CMS. GitHub
+is the source of truth for code, text and images.
 
 ## Editing content
 
@@ -45,13 +46,10 @@ npm run build
 npm run start
 ```
 
-The full build keeps the ChatGPT Sites preview artifact and creates the standard
-Next.js Hostinger server in both `.next/standalone/server.js` and
-`dist/standalone/server.js`. Both Hostinger entry files are explicitly marked as
-CommonJS so Passenger can load them without the Vinext ESM error.
-
-`npm run build:hostinger` remains available when only the Hostinger output is
-needed.
+The production build creates the normal `.next` output used by Hostinger's
+managed Next.js runtime. Hostinger owns the Node.js process, application routing
+and `.htaccess` generation. The repository does not create or maintain those
+server files.
 
 ## Contact enquiries
 

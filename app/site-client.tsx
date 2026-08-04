@@ -795,7 +795,7 @@ function HomeHero() {
             <span>Completed Projects</span>
           </div>
           <div>
-            <strong>5 Year</strong>
+            <strong>10 Years</strong>
             <span>Product Support</span>
           </div>
           <div>
